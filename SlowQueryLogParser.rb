@@ -7,10 +7,10 @@
 #
 # http://code.google.com/p/mysql-slow-query-log-parser
 #
-# Inspired by on the perl MySQL slow query log parser written by 
-# Nathanial Hendler (http://retards.org/)  
+# Inspired by on the perl MySQL slow query log parser written by
+# Nathanial Hendler (http://retards.org/)
 #
-# Any suggestions or fixes are more then welcome. 
+# Any suggestions or fixes are more then welcome.
 # lee (at) kumkee (dot) com
 #
 # --------------------------------------------------------------------------------
@@ -18,15 +18,15 @@
 # --------------------------------------------------------------------------------
 #
 # ruby SlowQueryLogParser [Path to log] [Order By]
-# 
+#
 # eg.
 # ruby SlowQueryLogParser query.log lock
 #
 # Order By Options:
-# - lock 
+# - lock
 # - time
 # - number
-# 
+#
 # --------------------------------------------------------------------------------
 # TODO
 # --------------------------------------------------------------------------------
@@ -51,17 +51,17 @@
 #
 # Copyright 2007-2009 Lee Kemp
 #
-# Licensed under the Apache License, Version 2.0 (the "License"); 
-# you may not use this file except in compliance with the License. 
-# You may obtain a copy of the License at 
-# 
-# http://www.apache.org/licenses/LICENSE-2.0 
-# 
-# Unless required by applicable law or agreed to in writing, software 
-# distributed under the License is distributed on an "AS IS" BASIS, 
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
-# See the License for the specific language governing permissions and 
-# limitations under the License. 
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 #
 
 require 'date'
@@ -102,21 +102,22 @@ class Query
     # Normalize sql query using RegExp from perl parser
     @normalized_query =  @sql.gsub(/\d+/, "XXX") # Replace numbers
     @normalized_query =  @normalized_query.gsub(/([\'\"]).+?([\'\"])/, "XXX") # Replace strings
+    @normalized_query =  @normalized_query.gsub(/(\s)+/, " ") # Shorten whitespace
     #@normalized_query =  @normalized_query.gsub(/\/\*[A-Za-z0-9\W\S]*/, "") # Remove comments '/* blah */
   end
-  
-  def getNormalizedQuery()  
+
+  def getNormalizedQuery()
     @normalized_query
   end
-  
+
   def getTime()
     @time
   end
-  
+
   def getLock()
     @lock
   end
-  
+
   def to_s
       "Date: #{@date}, Time #{@time}, Lock #{@lock}, Sent #{@sent}, Rows #{@rows} \n #{@sql}"
    end
@@ -135,15 +136,15 @@ class QueryTotal
 
   def addQuery(query)
     @queries.push(query)
-    
+
     if @max_time < query.getTime then
       @max_time = query.getTime
     end
-    
+
     if @max_lock < query.getLock then
       @max_lock = query.getLock
     end
-    
+
     if @min_time > query.getTime then
        @min_time = query.getTime
      end
@@ -151,37 +152,37 @@ class QueryTotal
      if @min_lock > query.getLock then
        @min_lock = query.getLock
      end
-     
+
   end
-  
+
   def getMax_time
     @max_time
   end
-  
+
   def getMax_lock
     @max_lock
   end
-  
+
   def getMin_time
     @min_time
   end
-  
+
   def getMin_lock
     @min_lock
   end
-  
-  def getNumberQueries 
+
+  def getNumberQueries
     @queries.length
   end
-  
+
   def getMedianTime
     @queries.sort{ |a,b| a.getTime <=> b.getTime }[@queries.length / 2].getTime
   end
-  
+
   def getMedianLock
     @queries.sort{ |a,b| a.getLock <=> b.getLock }[@queries.length / 2].getLock
   end
-  
+
   def getAverageTime
     total = 0
     for query in @queries
@@ -189,7 +190,7 @@ class QueryTotal
     end
     total / @queries.length
   end
-  
+
   def getAverageLock
     total = 0
     for query in @queries
@@ -197,22 +198,22 @@ class QueryTotal
     end
     total / @queries.length
   end
-  
+
   def to_s
       "Max time: #{@max_time}, Max lock #{@max_lock}, Number of queries #{@queries.length} \n #{@sql}"
   end
-   
+
   def display
     puts "#{@queries.length} Queries"
     if @queries.length < 10 then
-      
+
       @queries.sort!{ |a,b| a.getTime <=> b.getTime }
       print "Taking "
       @queries.each do |q|
         print "#{q.getTime} "
       end
       puts "seconds to complete"
-      
+
       @queries.sort{ |a,b| a.getLock <=> b.getLock }
       print "Locking for "
       @queries.each do |q|
@@ -221,16 +222,16 @@ class QueryTotal
       puts "seconds"
     else
       puts "Taking #{@min_time} to #{@max_time} seconds to complete"
-      puts "Locking for #{@min_lock} to #{@max_lock} seconds"    
+      puts "Locking for #{@min_lock} to #{@max_lock} seconds"
     end
-    
+
     puts "Average time: #{getAverageTime}, Median time #{getMedianTime}"
     puts "Average lock: #{getAverageLock}, Median lock #{getMedianLock}"
 
-    puts 
+    puts
     puts "#{@sql}"
   end
-   
+
 end
 
 #
@@ -242,17 +243,17 @@ begin
     while (line = file.gets)
         # First line in the query header is the time in which the query happened
         if line[0,1] == '#'
-          
-          if line[0,7] == "# Time:" then  
+
+          if line[0,7] == "# Time:" then
             date = "#{line}".delete("#Time:").lstrip.chop
-          
+
             # Ignore next line in the log (server info)
-            file.gets 
+            file.gets
           else
             # puts "Found line missing Date info. Date set to 0"
             date = 0
           end
-        
+
           # This line (3rd) has all the important info. Time, Lock etc.
           line = file.gets
           sl = line.split(" ")
@@ -260,14 +261,14 @@ begin
           lock = sl[4]
           sent = sl[6]
           rows = sl[8]
-          
+
           # The next line is the sql query
           sql = file.gets
           if sql[0,3] == 'use' then
             # When a use statement has been passed as a part of the query the next line is the actual query
             sql = file.gets
           end
-          
+
           # Some queries span multiple lines
           position = file.pos # Store the position
           while ((next_line = file.gets) && !(next_line =~ /^#/))
@@ -288,7 +289,7 @@ begin
         end
     end
     file.close
-    
+
     #
     # Go over all the query objects and group them in the appropriate QueryTotals object based on the SQL
     #
@@ -308,26 +309,27 @@ begin
     # Sort the query totals by lock time and display the output
     #
     queryTotalsArray = queryTotals.values
-    
+
     case orderBy
       when "lock"
-        queryTotalsArray.sort! { |a,b| a.getMax_lock <=> b.getMax_lock }    
+        queryTotalsArray.sort! { |a,b| a.getMax_lock <=> b.getMax_lock }
         #queryTotalsArray.reverse!
       when "time"
-        queryTotalsArray.sort! { |a,b| a.getMax_time <=> b.getMax_time }    
+        queryTotalsArray.sort! { |a,b| a.getMax_time <=> b.getMax_time }
         #queryTotalsArray.reverse!
       else
-        queryTotalsArray.sort! { |a,b| a.getNumberQueries <=> b.getNumberQueries }    
+        queryTotalsArray.sort! { |a,b| a.getNumberQueries <=> b.getNumberQueries }
         #queryTotalsArray.reverse!
     end
-    
+
     puts
     for queryTotal in queryTotalsArray
       puts spacer
       queryTotal.display
     end
-    
+
 rescue => err
     puts "Exception: #{err}"
     err
 end
+
