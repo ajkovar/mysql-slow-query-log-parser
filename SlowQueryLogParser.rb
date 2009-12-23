@@ -100,7 +100,7 @@ class Query
     @sent   = sent.to_i
 
     # Normalize sql query using RegExp from perl parser
-    @normalized_query =  @sql.gsub(/\d+/, "XXX") # Replace numbers
+    @normalized_query =  @sql.gsub(/[^a-zA-Z_]\d+/, "XXX") # Replace numbers
     @normalized_query =  @normalized_query.gsub(/([\'\"]).+?([\'\"])/, "XXX") # Replace strings
     @normalized_query =  @normalized_query.gsub(/(\s)+/, " ") # Shorten whitespace
     #@normalized_query =  @normalized_query.gsub(/\/\*[A-Za-z0-9\W\S]*/, "") # Remove comments '/* blah */
